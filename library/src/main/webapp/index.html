@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Library Management</title>
+<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+<link rel="icon" type="image/png" href="images/booklogo.jpg" />
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style type="text/css">
+.hd {
+	color: #337ab7;
+}
+
+.add--panel {
+	background-color: lightgray;
+	width: 60vw;
+	margin-left: 300px;
+	margin-bottom: 20px;
+}
+
+.label--cls {
+	position: absolute;
+	left: 350px;
+}
+
+.cls--div {
+	padding: 10px;
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<div class="table-responsive">
+			<h1 align="center" class="hd">Library Management System</h1>
+			<br /> <br />
+			<div align="center">
+				<button onclick="doLoad()" type="button" name="load_data"
+					id="load_data" class="btn btn-info">Get Book Info</button>
+				<button onclick="doADD()" id="add_data" class="btn btn-info">ADD</button>
+			</div>
+			<br />
+			<div id="book_table"></div>
+		</div>
+	</div>
+	<div align="center" id="add_panel" class="add--panel">
+		<h1>Add/Update Book</h1>
+		<form>
+			<div class="cls--div">
+				<label class="label--cls">Book Nmae : </label> <input id="book_name"
+					placeholder="Book Name" />
+			</div>
+			<div class="cls--div">
+				<label class="label--cls">Catagory: </label> <select
+					name="cataogory" id="catagory">
+					<option value="comics">COMICS</option>
+					<option value="novel">NOVEL</option>
+					<option value="history">HISTORY</option>
+					<option value="thriller">THRILLER</option>
+				</select>
+			</div>
+			<div class="cls--div">
+				<label class="label--cls">Authour : </label> <input id="authour"
+					placeholder="Authour" />
+			</div>
+			<div class="cls--div">
+				<label class="label--cls">Publisher : </label> <input id="publisher"
+					placeholder="Publisher Name" />
+			</div>
+			<div class="cls--div">
+				<button type="button" id="number-submit" onclick="doSave(event)"
+					class="login100-form-btn btn btn-lg btn-secondary">SAVE</button>
+			</div>
+		</form>
+	</div>
+</body>
+</html>
+
+
+<script>
+	var dbData;
+	var updateData;
+	var flg;
+	var admin = true;
+	var id;
+	$(document).ready(function() {
+		console.log("document loaded");
+		document.getElementById("add_panel").style.display = 'none';
+		if (!true) {
+			document.getElementById("add_data").style.display = 'none';
+		}
+		initialLoad();
+	});
+
+	function doLoad() {
+		console.log(dbData);
+		var table_data = '<table class="table table-bordered table-striped">';
+
+		table_data += '<tr>';
+
+		table_data += '<th>' + 'ID' + '</th>';
+		table_data += '<th>' + 'BOOK NAME' + '</th>';
+		table_data += '<th>' + 'CATOGORY' + '</th>';
+		table_data += '<th>' + 'AUTHOR' + '</th>';
+		table_data += '<th>' + 'PUBLISHER' + '</th>';
+		table_data += '<th>' + 'STATUS' + '</th>';
+		if (admin) {
+			table_data += '<th>' + 'UPDATE' + '</th>';
+			table_data += '<th>' + 'DELETE' + '</th>';
+		}
+		table_data += '</tr>';
+
+		for (var loop = 0; loop < dbData.length; loop++) {
+			var eachdata = dbData[loop];
+
+			table_data += "<tr>";
+			table_data += "<td>" + eachdata["bookid"] + "</td>";
+			table_data += "<td>" + eachdata["bookname"] + "</td>";
+			table_data += "<td>" + eachdata["category"] + "</td>";
+			table_data += "<td>" + eachdata["author"] + "</td>";
+			table_data += "<td>" + eachdata["publisher"] + "</td>";
+			if (admin) {
+				table_data += "<td>"
+						+ `<button  onClick=doLent(${eachdata["bookid"]})>`
+						+ "LENT" + "</button>" + "</td>";
+			} else {
+				table_data += "<td>"
+						+ `<button disabled="true" onClick=doLent(${eachdata["bookid"]})>`
+						+ "LENT" + "</button>" + "</td>";
+			}
+			var bookId = eachdata["bookid"];
+			if (admin) {
+				table_data += "<td>"
+						+ `<button  onClick=doUpdate(${eachdata["bookid"]})>`
+						+ "Update" + "</button>" + "</td>";
+				table_data += "<td>"
+						+ `<button  onClick=doDelete(${eachdata["bookid"]})>`
+						+ "Delete" + "</button>" + "</td>";
+			}
+			table_data += "</tr>";
+		}
+
+		table_data += '</table>';
+
+		$('#book_table').html(table_data);
+
+	}
+
+	function doLent(bookId) {
+		var url = 'http://localhost:8080/api/books/';
+		var toDB = {};
+		toDB['bookid'] = bookId;
+		toDB['rentuser'] = localStorage.getItem('user');
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				alert(this.responseText);
+			}
+		};
+		xhttp.open("PUT", url, true);
+		xhttp.setRequestHeader("Content-type", "application/json");
+		xhttp.send(JSON.stringify(toDB));
+		initialLoad();
+		doLoad();
+	}
+
+	function doADD() {
+		flg = 1;
+		var elem = document.getElementById("add_panel");
+		if (elem.style.display === "none") {
+			elem.style.display = "block";
+			document.getElementById('book_name').value = '';
+			document.getElementById('catagory').value = '';
+			document.getElementById('authour').value = '';
+			document.getElementById('publisher').value = '';
+		} else {
+			elem.style.display = "none";
+		}
+	}
+
+	function doUpdate(bookID) {
+		flg = 2;
+		id = bookID;
+		var elem = document.getElementById("add_panel");
+		if (elem.style.display === "none") {
+			elem.style.display = "block";
+			validateForm(bookID);
+		} else {
+			elem.style.display = "none";
+		}
+
+	}
+
+	function doDelete(bookID) {
+		var url = 'http://localhost:8080/api/employees/' + bookID.toString();
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				alert(this.responseText);
+			}
+		};
+		xhttp.open("DELETE", url, true);
+		xhttp.setRequestHeader("Content-type", "application/json");
+		xhttp.send();
+	}
+
+	function doSave() {
+		var url = 'http://localhost:8080/api/books/';
+		var toDB = {};
+		if (flg === 2) {
+			toDB['bookid'] = id;
+		}
+		toDB['bookname'] = document.getElementById('book_name').value;
+		// 		toDB['category'] = document.getElementById('category').value;
+
+		toDB['category'] = 'Novel';
+		toDB['author'] = document.getElementById('authour').value;
+		toDB['publisher'] = document.getElementById('publisher').value;
+
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				alert(this.responseText);
+			}
+		};
+		if (flg === 1) {
+			alert(1)
+			xhttp.open("POST", url, true);
+		} else if (flg === 2) {
+			xhttp.open("PUT", url, true);
+		}
+		xhttp.setRequestHeader("Content-type", "application/json");
+		xhttp.send(JSON.stringify(toDB));
+		initialLoad();
+		doLoad();
+		flg = 0;
+	}
+
+	function validateForm(boodId) {
+		var url = 'http://localhost:8080/api/books/' + parseInt(boodId);
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(JSON.parse(this.responseText));
+				updateData = JSON.parse(this.responseText);
+				document.getElementById('book_name').value = updateData['bookname'];
+				document.getElementById('catagory').value = updateData['category'];
+				document.getElementById('authour').value = updateData['author'];
+				document.getElementById('publisher').value = updateData['publisher'];
+			}
+		};
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+
+	function initialLoad() {
+		var url = 'http://localhost:8080/api/books/';
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(JSON.parse(this.responseText));
+				dbData = JSON.parse(this.responseText);
+			}
+		};
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+</script>
