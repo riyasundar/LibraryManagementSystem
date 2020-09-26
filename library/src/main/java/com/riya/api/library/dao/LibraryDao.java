@@ -13,4 +13,6 @@ public interface LibraryDao {
 	public Book getByUser(int userId);
 
 	public Book update(Book book);
+	
+	public int delete(int id);
 }

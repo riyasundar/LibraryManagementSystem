@@ -38,4 +38,10 @@ public class LibraryServiceImpl implements LibraryService{
 		return theBook;
 	}
 
+	@Override
+	public int delete(int id) {
+		int returnId = dao.delete(id);
+		return returnId;
+	}
+
 }

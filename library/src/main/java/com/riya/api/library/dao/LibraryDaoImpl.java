@@ -45,7 +45,6 @@ public class LibraryDaoImpl implements LibraryDao {
 		Query<Book> getQuery = currentSession.createQuery("from Book where bookid=:bookid",Book.class);
 		getQuery.setParameter("bookid", id);
 		Book book = getQuery.getSingleResult();
-//		Book book = currentSession.get(Book.class, userId);
 		return book;
 	}
 
@@ -53,11 +52,16 @@ public class LibraryDaoImpl implements LibraryDao {
 	@Transactional
 	public Book update(Book book) {
 		Session currentSession = entity.unwrap(Session.class);
-		Book theBook = currentSession.get(Book.class, book.getBookid());
-		theBook.setRentUser(book.getRentUser());
 		currentSession.saveOrUpdate(book);
 		return book;
 	}
-
+	@Override
+	@Transactional
+	public int delete(int id) {
+		Session currentSession = entity.unwrap(Session.class);
+		Book book = currentSession.get(Book.class, id);
+		currentSession.delete(book);
+		return id;
+	}
 
 }

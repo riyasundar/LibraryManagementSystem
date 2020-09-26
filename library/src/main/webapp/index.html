@@ -89,7 +89,6 @@
 	var admin = true;
 	var id;
 	$(document).ready(function() {
-		console.log("document loaded");
 		document.getElementById("add_panel").style.display = 'none';
 		if (!true) {
 			document.getElementById("add_data").style.display = 'none';
@@ -98,7 +97,6 @@
 	});
 
 	function doLoad() {
-		console.log(dbData);
 		var table_data = '<table class="table table-bordered table-striped">';
 
 		table_data += '<tr>';
@@ -159,7 +157,6 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				alert(this.responseText);
 			}
 		};
 		xhttp.open("PUT", url, true);
@@ -197,15 +194,13 @@
 	}
 
 	function doDelete(bookID) {
-		var url = 'http://localhost:8080/api/employees/' + bookID.toString();
+		var url = 'http://localhost:8080/api/books/' + bookID;
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				alert(this.responseText);
 			}
 		};
 		xhttp.open("DELETE", url, true);
-		xhttp.setRequestHeader("Content-type", "application/json");
 		xhttp.send();
 	}
 
@@ -225,13 +220,11 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				alert(this.responseText);
 			}
 		};
-		if (flg === 1) {
-			alert(1)
+		if (flg == 1) {
 			xhttp.open("POST", url, true);
-		} else if (flg === 2) {
+		} else if (flg == 2) {
 			xhttp.open("PUT", url, true);
 		}
 		xhttp.setRequestHeader("Content-type", "application/json");
@@ -246,7 +239,6 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				console.log(JSON.parse(this.responseText));
 				updateData = JSON.parse(this.responseText);
 				document.getElementById('book_name').value = updateData['bookname'];
 				document.getElementById('catagory').value = updateData['category'];
@@ -263,7 +255,6 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				console.log(JSON.parse(this.responseText));
 				dbData = JSON.parse(this.responseText);
 			}
 		};
