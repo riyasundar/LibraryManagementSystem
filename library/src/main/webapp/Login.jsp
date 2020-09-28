@@ -87,21 +87,22 @@ button:hover {
 
 				<div class="">
 					<input class="input100" id="user" type="text" name="user"
-						placeholder="userName" /> <span
-						class="focus-input100-1"></span> <span class="focus-input100-2"></span>
+						placeholder="userName" /> <span class="focus-input100-1"></span>
+					<span class="focus-input100-2"></span>
 				</div>
 
 				<div class="">
 					<input class="input100" id="passwrd" type="password" name="pass"
-						placeholder="Password" /> <span
-						class="focus-input100-1"></span> <span class="focus-input100-2"></span>
+						placeholder="Password" /> <span class="focus-input100-1"></span>
+					<span class="focus-input100-2"></span>
 				</div>
 
 				<div class="">
 					<button type="button" id="number-submit" onclick="doLoginIn(event)"
-						class="login100-form-btn btn btn-lg btn-secondary">
-						Sign in</button>
+						class="login100-form-btn btn btn-lg btn-secondary">Sign
+						in</button>
 				</div>
+                <span id="error"></span> 
 
 				<div class="info-container">
 					<span class="txt1"> Create an account? </span> <a
@@ -117,8 +118,16 @@ button:hover {
   
   function doLoginIn(event) {
 	  event.preventDefault();
+	  
+	  var error = document.getElementById('error');
 	  var username = document.getElementById('user').value;
-	  localStorage.setItem('user',username);
+	  var password = document.getElementById('passwrd').value;
+	  error.style.color = "red" 
+	  if(username == '' || password == ''){
+		  (username == '') ? error.textContent = "Please enter username" : 
+			  error.textContent = "Please enter password";
+		  return false;
+	  }
 		  var url = 'http://localhost:8080/api/user/'+username;
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
@@ -126,6 +135,10 @@ button:hover {
 					if(this.responseText == 'Present'){
 						localStorage.setItem('user',username);
 						window.open("http://localhost:8080/index.html","_self");
+					}else{
+						document.getElementById('user').value = '';
+						document.getElementById('passwrd').value = '';
+						 error.textContent = "Invalid username or password";
 					}
 				}
 			};

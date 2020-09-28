@@ -1,6 +1,7 @@
 package com.riya.api.library.rest;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +44,13 @@ public class LibraryRestController {
 	public Book getBook(@PathVariable int userId) {
 		Book book = service.getByUser(userId);
 		return book;
+	}
+	
+	@GetMapping("/books/{searchBy}/{searchText}")
+	public List<Book> getBooks(@PathVariable("searchBy") String searchBy,
+			@PathVariable("searchText") String searchText) {
+		List<Book> books = service.search(searchBy,searchText);
+		return books;
 	}
 	
 	@DeleteMapping("/books/{userId}")

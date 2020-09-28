@@ -44,4 +44,10 @@ public class LibraryServiceImpl implements LibraryService{
 		return returnId;
 	}
 
+	@Override
+	public List<Book> search(String searchBy, String searchText) {
+		List<Book> books = dao.search(searchBy,searchText);
+		return books;
+	}
+
 }

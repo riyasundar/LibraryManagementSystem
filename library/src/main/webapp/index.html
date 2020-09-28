@@ -9,9 +9,7 @@
 	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <link rel="stylesheet"
 	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
-<link rel="icon" type="image/png" href="images/booklogo.jpg" />
-<script
-	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 <style type="text/css">
 .hd {
 	color: #337ab7;
@@ -32,6 +30,19 @@
 .cls--div {
 	padding: 10px;
 }
+
+#searchpanel {
+	border-style: groove;
+	width: 38vw;
+	margin-left: 300px;
+	margin-bottom: 20px;
+	height: 58px;
+}
+
+.search {
+	position: relative;
+	top: 8px;
+}
 </style>
 </head>
 <body>
@@ -43,6 +54,18 @@
 				<button onclick="doLoad()" type="button" name="load_data"
 					id="load_data" class="btn btn-info">Get Book Info</button>
 				<button onclick="doADD()" id="add_data" class="btn btn-info">ADD</button>
+			</div>
+			<br />
+			<div id="searchpanel" align="center">
+				<label id="searchlabel" class="search">SEARCH BY :</label> <select
+					name="searchby" id="searchby" class="search">
+					<option value="book">BOOK</option>
+					<option value="category">CATEGORY</option>
+					<option value="author">AUTHOR</option>
+					<option value="publisher">PUBLISHER</option>
+				</select> <input id="searchtext" class="search" />
+				<button onclick="doSearch()" id="searchbutton"
+					class="btn btn-info search">SEARCH</button>
 			</div>
 			<br />
 			<div id="book_table"></div>
@@ -88,9 +111,12 @@
 	var flg;
 	var admin = true;
 	var id;
+	var user;
 	$(document).ready(function() {
+		user = localStorage.getItem('user');
+		(user == 'admin') ? admin = true : admin = false;
 		document.getElementById("add_panel").style.display = 'none';
-		if (!true) {
+		if (!admin) {
 			document.getElementById("add_data").style.display = 'none';
 		}
 		initialLoad();
@@ -98,7 +124,7 @@
 
 	function doLoad() {
 		var table_data = '<table class="table table-bordered table-striped">';
-
+		var userLocked;
 		table_data += '<tr>';
 
 		table_data += '<th>' + 'ID' + '</th>';
@@ -115,21 +141,20 @@
 
 		for (var loop = 0; loop < dbData.length; loop++) {
 			var eachdata = dbData[loop];
-
+			userLocked = (eachdata["rentUser"] != null) ? true : false;
 			table_data += "<tr>";
 			table_data += "<td>" + eachdata["bookid"] + "</td>";
 			table_data += "<td>" + eachdata["bookname"] + "</td>";
 			table_data += "<td>" + eachdata["category"] + "</td>";
 			table_data += "<td>" + eachdata["author"] + "</td>";
 			table_data += "<td>" + eachdata["publisher"] + "</td>";
-			if (admin) {
+			if (!userLocked) {
 				table_data += "<td>"
-						+ `<button  onClick=doLent(${eachdata["bookid"]})>`
-						+ "LENT" + "</button>" + "</td>";
+						+ `<button onClick="doLent(${eachdata["bookid"]})">`
+						+ "BUY" + "</button>" + "</td>";
 			} else {
-				table_data += "<td>"
-						+ `<button disabled="true" onClick=doLent(${eachdata["bookid"]})>`
-						+ "LENT" + "</button>" + "</td>";
+				table_data += "<td>" + `<button disabled="true">`
+						+ "Not Available" + "</button>" + "</td>";
 			}
 			var bookId = eachdata["bookid"];
 			if (admin) {
@@ -149,21 +174,47 @@
 
 	}
 
-	function doLent(bookId) {
-		var url = 'http://localhost:8080/api/books/';
-		var toDB = {};
-		toDB['bookid'] = bookId;
-		toDB['rentuser'] = localStorage.getItem('user');
+	function doSearch() {
+		var searchCriteria = $('#searchby').val();
+		var searchText = $('#searchtext').val();
+		searchText = (searchText == '') ? "empty" : searchText;
+		var url = 'http://localhost:8080/api/books/' + searchCriteria + '/'
+				+ searchText;
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
+				dbData = JSON.parse(this.responseText);
+				doLoad();
+			}
+		};
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+
+	function getBookDetails(bookId) {
+		var bookData;
+		dbData.forEach(function(bookDetails) {
+			if (bookDetails["bookid"] == bookId) {
+				bookData = bookDetails;
+			}
+		});
+		return bookData;
+	}
+
+	function doLent(bookId) {
+		var url = 'http://localhost:8080/api/books/';
+		var bookData = getBookDetails(bookId);
+		var toDB = bookData;
+		toDB['rentUser'] = user;
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				initialLoad();
 			}
 		};
 		xhttp.open("PUT", url, true);
 		xhttp.setRequestHeader("Content-type", "application/json");
 		xhttp.send(JSON.stringify(toDB));
-		initialLoad();
-		doLoad();
 	}
 
 	function doADD() {
@@ -198,6 +249,8 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
+				document.getElementById("add_panel").style.display = 'none';
+				initialLoad();
 			}
 		};
 		xhttp.open("DELETE", url, true);
@@ -211,15 +264,14 @@
 			toDB['bookid'] = id;
 		}
 		toDB['bookname'] = document.getElementById('book_name').value;
-		// 		toDB['category'] = document.getElementById('category').value;
-
-		toDB['category'] = 'Novel';
+		toDB['category'] = document.getElementById('catagory').value;
 		toDB['author'] = document.getElementById('authour').value;
 		toDB['publisher'] = document.getElementById('publisher').value;
 
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
+				initialLoad();
 			}
 		};
 		if (flg == 1) {
@@ -229,8 +281,6 @@
 		}
 		xhttp.setRequestHeader("Content-type", "application/json");
 		xhttp.send(JSON.stringify(toDB));
-		initialLoad();
-		doLoad();
 		flg = 0;
 	}
 
@@ -256,6 +306,7 @@
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				dbData = JSON.parse(this.responseText);
+				doLoad();
 			}
 		};
 		xhttp.open("GET", url, true);

@@ -15,4 +15,6 @@ public interface LibraryDao {
 	public Book update(Book book);
 	
 	public int delete(int id);
+
+	public List<Book> search(String searchBy, String searchText);
 }

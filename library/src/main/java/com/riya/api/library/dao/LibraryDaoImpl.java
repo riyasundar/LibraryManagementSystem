@@ -64,4 +64,29 @@ public class LibraryDaoImpl implements LibraryDao {
 		return id;
 	}
 
+	@Override
+	public List<Book> search(String searchBy, String searchText) {
+		String sqlString = "";
+		Session currentSession = entity.unwrap(Session.class);
+		if(searchText.equals("empty")) {
+			sqlString = "from Book";
+		}else {
+		if(searchBy.equalsIgnoreCase("book")){
+			sqlString = "from Book where bookname =:searchText";
+		}else if(searchBy.equals("category")) {
+			sqlString = "from Book where category =:searchText";
+		}else if(searchBy.equals("author")) {
+			sqlString = "from Book where author =:searchText";
+		}else if(searchBy.equals("publisher")) {
+			sqlString = "from Book where publisher =:searchText";
+		}
+		}
+		Query<Book> getQuery = currentSession.createQuery(sqlString,Book.class);
+		if(!searchText.equals("empty")) {
+			getQuery.setParameter("searchText", searchText);
+		}
+		List<Book> book = getQuery.getResultList();
+		return book;
+	}
+
 }

@@ -40,15 +40,15 @@ public class UserDaoImpl implements UserDao {
 	}
 
 	@Override
-	public String checkUser(String user) {
+	public String checkUser(String user) throws NoResultException {
 		try {
 		Session currentSession = entity.unwrap(Session.class);
 		Query<User> checkQuery = currentSession.createQuery("from User where username=:user",
 				User.class);
 		checkQuery.setParameter("user", user);
-		checkQuery.getResultList();
+		checkQuery.getSingleResult();
 		return "Present";
-		}catch(NoResultException e) {
+		}catch(Exception e) {
 			return null;
 		}
 	}

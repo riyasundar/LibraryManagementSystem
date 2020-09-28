@@ -146,7 +146,6 @@ function doLoginIn(event) {
 			xhttp.open("POST",url , true);
 			xhttp.setRequestHeader("Content-type", "application/json");
 			xhttp.send(JSON.stringify(userDetails));
-// 			window.open("http://localhost:8080/Login.jsp","_self");
 		}
 }
 
